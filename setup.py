@@ -9,7 +9,7 @@ import platform
 with open("requirements.txt") as fp:
     install_requires = fp.read().splitlines()
 
-if platform.system() in ["Linux", "Windows"]:
+if platform.system() in ["Windows"]:
     install_requires.append("AppOpener==1.7")
 
 elif platform.system() == "Darwin": # Darwin is the system name for macOS
@@ -19,7 +19,7 @@ elif platform.system() == "Darwin": # Darwin is the system name for macOS
 
 setup(
     name="gpt_computer_assistant",
-    version="0.19.1",
+    version="0.21.1",
     description="""GPT""",
     long_description="".join(open("README.md", encoding="utf-8").readlines()),
     long_description_content_type="text/markdown",
@@ -48,5 +48,15 @@ setup(
         "agentic": ["crewai==0.30.11"],
         "wakeword": ["pvporcupine", "pyaudio"],
         "api": ["flask==3.0.3",],
+        "local_tts": [
+            "tensorflow==2.17.0",
+            "datasets[audio]==2.20.0",
+            "sentencepiece==0.2.0",
+            "torch==2.4.0",
+            "transformers==4.43.3",
+        ],
+        "local_stt": [
+            "openai-whisper==20231117",
+        ],
     },
 )

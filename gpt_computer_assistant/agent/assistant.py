@@ -62,7 +62,7 @@ def agentic(
 
         the_model = load_model_settings()
 
-        if  llm_settings[the_model]["provider"] == "openai":
+        if  llm_settings[the_model]["provider"] == "openai" and llm_settings[the_model]["provider"] == "ollama":
             msg = get_agent_executor().invoke(
                 {"messages": llm_history + [the_message]}, config=config
             )
@@ -72,14 +72,6 @@ def agentic(
                 {"messages": llm_history + [the_message]}, config=config
             )
 
-        if llm_settings[the_model]["provider"] == "ollama":
-
-            msg = get_agent_executor().invoke(
-                {
-                    "input": the_message,
-                    "chat_history": llm_history,
-                }
-            )
 
         the_last_messages = msg["messages"]
 
@@ -90,7 +82,7 @@ def agentic(
         llm_input += "User Sent Image and image content is: " + image_explain
 
 
-
+    
     llm_input = llm_input + each_message_extension
 
 
@@ -117,26 +109,40 @@ def assistant(
     llm_input, llm_history, client, screenshot_path=None, dont_save_image=False
 ):
 
+    the_model = load_model_settings()
+
+
     if len(agents) != 0:
         print("Moving to Agentic")
         return agentic(llm_input, llm_history, client, screenshot_path, dont_save_image)
 
     print("LLM INPUT", llm_input)
 
-    llm_input = llm_input + each_message_extension
+
+    if llm_settings[the_model]["tools"]:
+        llm_input = llm_input + each_message_extension
 
     the_message = [
         {"type": "text", "text": f"{llm_input}"},
     ]
 
     if screenshot_path:
+
         base64_image = encode_image(screenshot_path)
-        the_message.append(
-            {
-                "type": "image_url",
-                "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"},
-            },
-        )
+        if llm_settings[the_model]["provider"] == "ollama":
+            the_message.append(
+                {
+                    "type": "image_url",
+                    "image_url": base64_image,
+                },
+            )
+        else:
+            the_message.append(
+                {
+                    "type": "image_url",
+                    "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"},
+                },
+            )
         print("LEN OF IMAGE", len(base64_image))
 
 
@@ -144,9 +150,8 @@ def assistant(
     the_message = HumanMessage(content=the_message)
     get_chat_message_history().add_message(the_message)
 
-    the_model = load_model_settings()
-
-    if llm_settings[the_model]["provider"] == "openai":
+    
+    if llm_settings[the_model]["provider"] == "openai" or llm_settings[the_model]["provider"] == "ollama":
         msg = get_agent_executor().invoke(
             {"messages": llm_history + [the_message]}, config=config
         )
@@ -169,7 +174,7 @@ def assistant(
                 the_mes = AIMessage(content=message.content)
                 the_history.append(the_mes)
 
-        llm_input += each_message_extension
+
 
         the_last_message = HumanMessage(content=llm_input)
         msg = get_agent_executor().invoke(
@@ -194,21 +199,15 @@ def assistant(
                 the_mes = AIMessage(content=message.content)
                 the_history.append(the_mes)
 
-        llm_input += each_message_extension
+
 
         the_last_message = HumanMessage(content=llm_input)
         msg = get_agent_executor().invoke(
             {"messages": the_history + [the_last_message]}, config=config
         )
 
-    elif llm_settings[the_model]["provider"] == "ollama":
 
-        msg = get_agent_executor().invoke(
-            {
-                "input": the_message,
-                "chat_history": llm_history,
-            }
-        )
+
 
     the_last_messages = msg["messages"]
 
@@ -230,6 +229,7 @@ def assistant(
 
 
 
+
     # Replace each_message_extension with empty string
     list_of_messages = get_chat_message_history().messages
 
@@ -243,5 +243,7 @@ def assistant(
             get_chat_message_history().add_message(message)
 
 
+
+    print("The return", the_last_messages[-1].content)
 
     return the_last_messages[-1].content

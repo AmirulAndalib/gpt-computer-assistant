@@ -121,12 +121,17 @@ icon_16_path = os.path.join(media_dir, "icon_16.png")
 icon_24_path = os.path.join(media_dir, "icon_24.png")
 icon_32_path = os.path.join(media_dir, "icon_32.png")
 icon_48_path = os.path.join(media_dir, "icon_48.png")
+icon_48_active_path = os.path.join(media_dir, "icon_48_active.png")
 icon_256_path = os.path.join(media_dir, "icon_256.png")
 screenshot_icon_path = os.path.join(media_dir, "Screenshot.png")
 audio_icon_path = os.path.join(media_dir, "Audio.png")
 microphone_icon_path = os.path.join(media_dir, "Microphone.png")
 up_icon_path = os.path.join(media_dir, "Up.png")
 down_icon_path = os.path.join(media_dir, "Down.png")
+
+click_sound_path = os.path.join(media_dir, "boop.mp3")
+
+gca_logo_path = os.path.join(media_dir, "gca_logo.png")
 
 agents = []  # Placeholder for agents data
 
@@ -426,3 +431,142 @@ def is_continuously_conversations_setting_active():
         return False
     with open(continuously_conversations_setting, "r") as f:
         return f.read() == "1"
+
+
+
+
+tts_model_settings_db = os.path.join(artifacts_dir, "tts_model_settings.db")
+
+
+def save_tts_model_settings(model):
+    """Save the tts model settings to a file."""
+    with open(tts_model_settings_db, "w") as f:
+        f.write(model)
+
+
+def load_tts_model_settings():
+    """Load the tts model settings from a file."""
+    if not os.path.exists(tts_model_settings_db):
+        return "openai"
+    with open(tts_model_settings_db, "r") as f:
+        return f.read()
+
+
+stt_model_settings_db = os.path.join(artifacts_dir, "stt_model_settings.db")
+
+
+def save_stt_model_settings(model):
+    """Save the stt model settings to a file."""
+    with open(stt_model_settings_db, "w") as f:
+        f.write(model)
+
+
+def load_stt_model_settings():
+    """Load the stt model settings from a file."""
+    if not os.path.exists(stt_model_settings_db):
+        return "openai"
+    with open(stt_model_settings_db, "r") as f:
+        return f.read()
+    
+
+
+
+
+
+logo_active_setting = os.path.join(artifacts_dir, "logo_active_setting.db")
+
+
+def activate_logo_active_setting():
+    """Activate the logo_active_setting."""
+    with open(logo_active_setting, "w") as f:
+        f.write("1")
+
+
+def deactivate_logo_active_setting():
+    """Deactivate the logo_active_setting."""
+    with open(logo_active_setting, "w") as f:
+        f.write("0")
+
+def is_logo_active_setting_active():
+    """Check if the logo_active_setting is active."""
+    if not os.path.exists(logo_active_setting):
+        return False
+    with open(logo_active_setting, "r") as f:
+        return f.read() == "1"
+    
+
+
+
+
+logo_file_path = os.path.join(artifacts_dir, "loog_file.db")
+
+
+def save_logo_file_path(model):
+    """Save the logo_file_path to a file."""
+    with open(logo_file_path, "w") as f:
+        f.write(model)
+
+
+def load_logo_file_path():
+    """Load the logo_file_path from a file."""
+    if not os.path.exists(logo_file_path):
+        return gca_logo_path
+    with open(logo_file_path, "r") as f:
+        return f.read()
+    
+
+custom_logo_path = os.path.join(artifacts_dir, "custom_logo_path.png")
+
+
+
+
+
+
+long_gca_setting = os.path.join(artifacts_dir, "long_gca_setting.db")
+
+
+def activate_long_gca_setting():
+    """Activate the long_gca_setting."""
+    with open(long_gca_setting, "w") as f:
+        f.write("1")
+
+
+def deactivate_long_gca_setting():
+    """Deactivate the long_gca_setting."""
+    with open(long_gca_setting, "w") as f:
+        f.write("0")
+
+def is_long_gca_setting_active():
+    """Check if the long_gca_setting is active."""
+    if not os.path.exists(long_gca_setting):
+        return True
+    with open(long_gca_setting, "r") as f:
+        return f.read() == "1"
+    
+
+
+
+
+
+
+
+
+
+
+
+location_setting = os.path.join(artifacts_dir, "location_setting.db")
+
+
+def save_location_setting(model):
+    """Save the location_setting to a file."""
+    with open(location_setting, "w") as f:
+        f.write(model)
+
+
+def load_location_setting():
+    """Load the location_setting from a file."""
+    if not os.path.exists(location_setting):
+        return "right"
+    with open(location_setting, "r") as f:
+        return f.read()
+    

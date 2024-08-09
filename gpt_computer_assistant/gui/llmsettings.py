@@ -2,26 +2,28 @@ try:
     from ..utils.db import *
     from ..agent.chat_history import clear_chat_history
     from ..llm_settings import llm_show_name, llm_settings
+    from ..audio.tts import is_local_tts_available
+    from ..audio.stt import is_local_stt_available
+
 except ImportError:
     from utils.db import *
     from agent.chat_history import clear_chat_history
     from llm_settings import llm_show_name, llm_settings
+    from audio.tts import is_local_tts_available
+    from audio.stt import is_local_stt_available
 
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QComboBox
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QComboBox
 
-from gpt_computer_assistant.utils.db import save_openai_url, save_groq_api_key
+
 
 
 def llmsettings_popup(self):
     from ..gpt_computer_assistant import the_main_window
 
-    # Create a settings dialog and inside of it create a text input about openai_api_key and a button to save it
     settings_dialog = QDialog()
     settings_dialog.setWindowTitle("Settings")
     settings_dialog.setWindowModality(Qt.ApplicationModal)
-
     settings_dialog.setLayout(QVBoxLayout())
 
     api_key_label = QLabel("OpenAI API Key")
@@ -34,7 +36,6 @@ def llmsettings_popup(self):
 
     def save_api_key_(api_key):
         save_api_key(api_key)
-
         the_main_window.update_from_thread("Saved API Key")
         the_main_window.input_box.setPlaceholderText("Type here")
         settings_dialog.close()
@@ -42,7 +43,6 @@ def llmsettings_popup(self):
     save_button.clicked.connect(lambda: save_api_key_(api_key_input.text()))
     settings_dialog.layout().addWidget(save_button)
 
-    # Start of new OpenAI Base URL settings
     openai_url_label = QLabel("OpenAI Base URL")
     settings_dialog.layout().addWidget(openai_url_label)
     openai_url_input = QLineEdit()
@@ -53,7 +53,6 @@ def llmsettings_popup(self):
     def save_openai_url_():
         openai_url = openai_url_input.text()
         save_openai_url(openai_url)
-
         the_main_window.update_from_thread("Saved OpenAI Base URL")
         the_main_window.input_box.setPlaceholderText("Type here")
         settings_dialog.close()
@@ -61,7 +60,6 @@ def llmsettings_popup(self):
     openai_url_save_button = QPushButton("Save URL")
     openai_url_save_button.clicked.connect(save_openai_url_)
     settings_dialog.layout().addWidget(openai_url_save_button)
-    # End of new OpenAI Base URL settings
 
     groq_api_key_label = QLabel("Groq API Key")
     settings_dialog.layout().addWidget(groq_api_key_label)
@@ -77,12 +75,8 @@ def llmsettings_popup(self):
         the_main_window.input_box.setPlaceholderText("Type here")
         settings_dialog.close()
 
-    groq_save_button.clicked.connect(
-        lambda: groq_save_api_key_(groq_api_key_input.text())
-    )
+    groq_save_button.clicked.connect(lambda: groq_save_api_key_(groq_api_key_input.text()))
     settings_dialog.layout().addWidget(groq_save_button)
-
-
 
     google_api_key_label = QLabel("Google Generative AI API Key")
     settings_dialog.layout().addWidget(google_api_key_label)
@@ -98,9 +92,7 @@ def llmsettings_popup(self):
         the_main_window.input_box.setPlaceholderText("Type here")
         settings_dialog.close()
 
-    google_save_button.clicked.connect(
-        lambda: google_save_api_key_(google_api_key_input.text())
-    )
+    google_save_button.clicked.connect(lambda: google_save_api_key_(google_api_key_input.text()))
     settings_dialog.layout().addWidget(google_save_button)
 
     def hide_openai():
@@ -115,7 +107,6 @@ def llmsettings_popup(self):
         groq_api_key_label.hide()
         groq_api_key_input.hide()
         groq_save_button.hide()
-
 
     def hide_google():
         google_api_key_label.hide()
@@ -144,93 +135,133 @@ def llmsettings_popup(self):
     hide_groq()
     hide_google()
 
-    print("LLLM SETTINGS", list(llm_show_name.keys()))
-
-    # Add a select box with the options OpenAI and Olamo
     model_label = QLabel("Model")
     model_select = QComboBox()
-    model_select.addItems(
-        list(llm_show_name.keys())
-    )
-
+    model_select.addItems(list(llm_show_name.keys()))
     settings_dialog.layout().addWidget(model_label)
     settings_dialog.layout().addWidget(model_select)
 
-    # currently model
     current_model = load_model_settings()
-    # lets set index of current model
     for i, model in enumerate(llm_show_name.keys()):
-        print("MODEL", model, current_model)
-        the_save_string = llm_show_name[model]
-        if the_save_string == current_model:
+        if llm_show_name[model] == current_model:
             model_select.setCurrentIndex(i)
-
-
 
     if llm_settings[llm_show_name[model_select.currentText()]]["provider"] == "openai":
         show_openai()
-
     if llm_settings[llm_show_name[model_select.currentText()]]["provider"] == "groq":
         show_groq()
-
     if llm_settings[llm_show_name[model_select.currentText()]]["provider"] == "google":
         show_google()
 
-    if not llm_settings[llm_show_name[model_select.currentText()]]["transcription"]:
-
-        the_main_window.remove_painting()
-
     if not llm_settings[llm_show_name[model_select.currentText()]]["vision"]:
-
         the_main_window.remove_screenshot_button()
-
-
-
 
     def on_model_change():
         hide_openai()
         hide_groq()
         hide_google()
-
-
         the_save_string = llm_show_name[model_select.currentText()]
         save_model_settings(the_save_string)
-
-
-
-
-
-        if llm_settings[llm_show_name[model_select.currentText()]]["transcription"] is False: 
-            from ..gpt_computer_assistant import the_main_window
-
-            the_main_window.remove_painting()
-
-
 
         if llm_settings[llm_show_name[model_select.currentText()]]["provider"] == "openai":
             show_openai()
             openai_url_label.show()
             openai_url_input.show()
             openai_url_save_button.show()
-            from ..gpt_computer_assistant import the_main_window
-
-            the_main_window.activate_painting()
-
         if llm_settings[llm_show_name[model_select.currentText()]]["vision"]:
             the_main_window.add_screenshot_button()
         else:
             the_main_window.remove_screenshot_button()
-
-
-
-
         if llm_settings[llm_show_name[model_select.currentText()]]["provider"] == "groq":
             show_groq()
-
         if llm_settings[llm_show_name[model_select.currentText()]]["provider"] == "google":
             show_google()
 
-
     model_select.currentIndexChanged.connect(on_model_change)
+
+    # Add TTS model selection
+    tts_model_label = QLabel("TTS Model")
+    tts_model_select = QComboBox()
+    tts_model_select.addItems(["openai", "microsoft_local"])
+    settings_dialog.layout().addWidget(tts_model_label)
+    settings_dialog.layout().addWidget(tts_model_select)
+
+    currently_tts_model = load_tts_model_settings()
+
+    if currently_tts_model == "openai":
+        tts_model_select.setCurrentIndex(0)
+        show_openai()
+    else:
+        tts_model_select.setCurrentIndex(1)
+
+    def on_tts_model_change():
+        if tts_model_select.currentText() == "openai":
+            show_openai()
+            save_tts_model_settings("openai")
+        else:
+            save_tts_model_settings("microsoft_local")
+
+    if not is_local_tts_available():
+        #add an text to inform the user that local tts is not available
+        information_text = QLabel("Please install gpt-computer-assistant[local_tts] to use local TTS")
+        settings_dialog.layout().addWidget(information_text)
+        tts_model_select.setEnabled(False)
+
+
+
+    tts_model_select.currentIndexChanged.connect(on_tts_model_change)
+
+
+
+
+    # Add STT model selection
+    stt_model_label = QLabel("STT Model")
+    stt_model_select = QComboBox()
+    stt_model_select.addItems(["openai", "openai_whisper_local"])
+    settings_dialog.layout().addWidget(stt_model_label)
+    settings_dialog.layout().addWidget(stt_model_select)
+
+    currently_stt_model = load_stt_model_settings()
+
+    if currently_stt_model == "openai":
+        stt_model_select.setCurrentIndex(0)
+        show_openai()
+    else:
+        stt_model_select.setCurrentIndex(1)
+
+    def on_stt_model_change():
+        if stt_model_select.currentText() == "openai":
+            show_openai()
+            save_stt_model_settings("openai")
+        else:
+            save_stt_model_settings("openai_whisper_local")
+
+    if not is_local_stt_available():
+        #add an text to inform the user that local stt is not available
+        information_text = QLabel("Please install gpt-computer-assistant[local_stt] to use local STT")
+        settings_dialog.layout().addWidget(information_text)
+        stt_model_select.setEnabled(False)
+
+
+
+    stt_model_select.currentIndexChanged.connect(on_stt_model_change)
+
+
+
+    # Add an separator
+    separator = QLabel("------------------------------------------------")
+    settings_dialog.layout().addWidget(separator)
+
+
+    # Add an powered by label
+    powered_by_label = QLabel("Powered by Upsonic <3")
+    # Make label bold
+    font = powered_by_label.font()
+    font.setBold(True)
+    powered_by_label.setFont(font)
+    
+    settings_dialog.layout().addWidget(powered_by_label)
+
+
 
     settings_dialog.exec_()

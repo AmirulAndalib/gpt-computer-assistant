@@ -1,7 +1,9 @@
+.DS_Store
+
 *.mp3
 *.wav
 *.wav*
-*.png
+gpt_computer_assistant/utils/artifacts/*.png
 *.db
 *.db-shm
 *.db-wal
