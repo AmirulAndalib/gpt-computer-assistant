@@ -37,6 +37,7 @@ dependencies = [
 [project.optional-dependencies]
 rag = [
     "future>=1.0.0",
+    "gensim==4.3.2",
     "graspologic>=3.4.1",
     "lightrag-hku>=1.2.3",
     "nano-vectordb>=0.0.4.3",
